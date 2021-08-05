@@ -43,3 +43,96 @@ java报出了一个Exception，指出除数为0。
 
 异常最重要的一个方面是，如果程序出了问题，那么异常处理将**不允许**程序按照既定路线执行下去，并且**强制**程序终止运行并报告错误，或者强制程序处理错误，返回至稳定状态。这么做将会很大程度减少程序出错造成的损失。
 
+### 异常参数
+
+所有的异常标准类都会包含两个构造器：默认构造器和参数为字符串的构造器。
+
+所有异常类的根类是Throwable。通常要根据具体异常类型来抛出相应的异常。错误信息可以用异常类来暗示。
+
+## 捕获异常
+
+在代码中，如果想去**尝试**一些操作，但是这些操作可能导致某些异常被抛出，就可以使用try块包裹这些操作：
+
+```java
+try{
+    f();
+}
+```
+
+如果你想“抓住”这些抛出的异常，就应该在try后面紧跟catch：
+
+```java
+try{
+    f();
+}catch(SomeException e){
+    e.printStackTrace();
+}catch(OtherException oe){
+    oe.printStackTrace();
+}catch(Exception exception){
+    exception.printStackTrace();
+}
+
+```
+
+在一段代码中，try和catch的数量可以有许多个。
+
+当try中的异常被抛出后，异常处理程序就会在所有的异常列表中顺序寻找**第一个**恰当的异常，然后进入catch块内进行操作，当catch内语句执行完毕，则处理程序查找结束。
+
+### 终止和恢复
+
+异常处理理论分为两种模型：终止模型和恢复模型。Java支持终止模型。终止模型是指，程序假设每一次错误都是**不可挽回的**，一旦错误被抛出，就不能继续执行下去，也不能恢复到之前的地方。另一种恢复模型，虽然可以通过while使try不断执行，得到想要的结果，但是这会增加程序代码的耦合性，降低复用率，使得程序变得难以开发和维护。
+
+## 自定义异常
+
+我们可以继承Exception甚至是Throwable类来创建属于自己的异常：
+
+```java
+class MyException extends Exception{
+    public MyException(){
+        super();
+    }
+    public MyException(String s){
+        super(s);
+    }
+}
+```
+
+在输出异常信息是，我们往往不会使用System.out，而是使用System.err标准错误流。
+
+通常在异常处理中，使用printStackTrace()方法来输出错误信息。在默认参数下，是输出到标准错误流中，但是可以通过更改参数来输出到其他不同的地方：
+
+```java
+printStackTrace();
+printStackTrace(PrintStream);
+printStackTrace(java.io.PrintWriter);
+```
+
+### 日志记录
+
+我们可以使用java.util.logging工具输出记录到日志中：
+
+```java
+class LoggingOut{
+    private static Logger logger = Logger.getLogger("printLog");
+    public static void printLog(Exception e){
+        StringWriter trace = new StringWriter();
+        e.printStackTrace(new PrintWriter(trace));
+        logger.severe(trace.toString());
+    }
+}
+```
+
+## 异常说明
+
+我们可以在方法后面加throws关键字来标记方法可能出现的异常：
+
+```java
+void f() throws Exception{}
+```
+
+代码必须和异常说明保持一致。如果方法产生异常但是你并没有说明，那么编译器将会强制你：要么处理异常，要么添加说明指出这个方法会产生异常。
+
+你可以声明某个方法将抛出异常，但是实际上并不会真正的抛出。这样你可以在以后的编写中不需要修改已有的代码。
+
+这种收到编译器强制检查的异常叫做**受检查的异常**。
+
